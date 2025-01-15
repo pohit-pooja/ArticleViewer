@@ -1,0 +1,51 @@
+﻿@page "/article/{id:int}"
+@using ArticleViewer.State
+@inject ArticleState ArticleState
+@inject ArticleService ArticleService
+
+<PageTitle>Article Detail</PageTitle>
+
+<div class="container mt-5">
+    @if (ArticleState.IsLoading)
+    {
+        <div class="alert alert-info text-center" role="alert">
+            Loading article...
+        </div>
+    }
+    else if (ArticleState.HasError)
+    {
+        <div class="alert alert-danger text-center" role="alert">
+            An error occurred while fetching the article. Please try again later.
+        </div>
+    }
+    else if (ArticleState.Articles == null || !ArticleState.Articles.Any(a => a.Id == Id))
+    {
+        <div class="alert alert-warning text-center" role="alert">
+            Article not found.
+        </div>
+    }
+    else
+    {
+        var article = ArticleState.Articles.FirstOrDefault(a => a.Id == Id);
+        <div class="row-card shadow-sm border-0">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">@article.Title</h2>
+                    <p class="article-subtitle text-muted text-center mb-3">@article.Summary</p>
+                    <div class="article-card-text">
+                        <p>@article.FullText</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ArticleState.LoadArticleByIdAsync(Id, ArticleService);
+    }
+}

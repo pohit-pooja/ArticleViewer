@@ -1,0 +1,59 @@
+﻿@page "/"
+@using ArticleViewer.State
+@inject ArticleState ArticleState
+@inject ArticleService ArticleService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Articles</PageTitle>
+
+<div class="container my-5">
+    <div class="text-center">
+        <h1 class="display-4 fw-bold">Welcome to Articles</h1>
+        <p class="text-muted">Browse through our collection of insightful articles below.</p>
+    </div>
+
+    @if (ArticleState.IsLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (ArticleState.HasError)
+    {
+        <div class="alert alert-danger text-center">
+            An error occurred while loading the articles. Please try again later.
+        </div>
+    }
+    else if (ArticleState.Articles == null || !ArticleState.Articles.Any())
+    {
+        <div class="alert alert-warning text-center">No articles available.</div>
+    }
+    else
+    {
+        <ul class="list-unstyled">
+            @foreach (var article in ArticleState.Articles)
+            {
+                <li class="mb-3 row-card" @onclick="() => NavigateToArticle(article.Id)">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title">@article.Title</h5>
+                            <p class="card-text">@article.Summary</p>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+
+    private async Task NavigateToArticle(int id) => NavigationManager.NavigateTo($"/article/{id}");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ArticleState.LoadArticlesAsync(ArticleService);
+    }
+}
